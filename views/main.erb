@@ -1,5 +1,5 @@
 <% if signed_in %>
-  <p>Hello! You're signed in to trello as <%= person.full_name %>.</p>
+  <p>Hello! You're signed in to Trello as <%= person.full_name %>.</p>
 
   <p>Select the boards to visualise:</p>
 
@@ -15,7 +15,7 @@
     <input type=submit>
   </form>
 <% else %>
-  <p>trello-zettelkasten lets you visualise links between trello cards</p>
-  <p><a href="/auth/trello">Sign in with trello to begin</a></p>
+  <p>Trello Zettelkasten lets you visualise links between Trello cards.</p>
+  <p><a href="/auth/trello">Sign in with Trello to begin</a>!</p>
 <% end %>
 
