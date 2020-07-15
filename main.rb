@@ -16,25 +16,33 @@ use OmniAuth::Builder do
     :trello,
     ENV.fetch("TRELLO_KEY"),
     ENV.fetch("TRELLO_TOKEN"),
+    app_name: "trello-zettelkasten",
+    scope: "read,account",
+    expiration: "1day",
   )
 end
 
 
 get "/" do
-  redirect to("/auth/trello") unless session.has_key?(:token)
+  if session.has_key?(:token)
+    client = Trello::Client.new(
+      consumer_key: ENV.fetch("TRELLO_KEY"),
+      consumer_secret: ENV.fetch("TRELLO_TOKEN"),
+      oauth_token: session.fetch(:token),
+    )
 
-  client = Trello::Client.new(
-    consumer_key: ENV.fetch("TRELLO_KEY"),
-    consumer_secret: ENV.fetch("TRELLO_TOKEN"),
-    oauth_token: session.fetch(:token),
-  )
+    person = client.find(:members, "me")
 
-  person = client.find(:members, "me")
-
-  erb :main, locals: {
-    person: person,
-    boards: person.boards,
-  }
+    erb :main, locals: {
+      signed_in: true,
+      person: person,
+      boards: person.boards,
+    }
+  else
+    erb :main, locals: {
+      signed_in: false,
+    }
+  end
 end
 
 get "/visualise" do
