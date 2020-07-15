@@ -1,2 +1,17 @@
 <h1>Connected graphs for <%= board_names %></h1>
-<%= graph %>
+<style>
+.graph-wrapper {
+  overflow: scroll;
+  max-width: 98%;
+  max-height: 80vh;
+  margin-bottom: 20px;
+  display: inline-block;
+  border: 3px solid #b1b4b6;
+  vertical-align: top;
+}
+</style>
+<% graphs.each do |graph| %>
+  <div class="graph-wrapper">
+  <%= graph %>
+  </div>
+<% end %>

@@ -66,7 +66,7 @@ get "/visualise" do
 
   erb :visualise, locals: {
     board_names: boards.map {|b| b.name}.join(","),
-    graph: draw_graph(cards)
+    graphs: draw_graphs(cards)
   }
 end
 
@@ -88,7 +88,7 @@ def get_card_url_prefix(url)
   url.match(CARD_PATTERN)[0]
 end
 
-def draw_graph(cards)
+def draw_graphs(cards)
   graph_nodes = cards.map do |card|
     GraphNode.new(
       get_card_url_prefix(card.url),
@@ -133,6 +133,6 @@ def draw_graph(cards)
   graphviz_input = ERB.new(template).result(binding)
   connected_components_output, status = Open3.capture2("ccomps", "-x", stdin_data: graphviz_input)
   graphviz_output, status = Open3.capture2("dot", "-Tsvg", stdin_data: connected_components_output)
-  graphviz_output
+  graphviz_output.split(/<\?xml version="1\.0" encoding="UTF-8" standalone="no"\?>/).reject {|x| x.empty?}.sort_by {|x| x.length}
 end
 
