@@ -56,11 +56,18 @@ get "/visualise" do
 
   board_ids = params.keys
 
-  cards = board_ids.flat_map do |board_id|
-    client.find(:boards, board_id).cards
+  boards = board_ids.map do |board_id|
+    client.find(:boards, board_id)
   end
 
-  draw_graph cards
+  cards = boards.flat_map do |board|
+    board.cards
+  end
+
+  erb :visualise, locals: {
+    board_names: boards.map {|b| b.name}.join(","),
+    graph: draw_graph(cards)
+  }
 end
 
 get "/auth/trello/callback" do
@@ -85,7 +92,7 @@ def draw_graph(cards)
   graph_nodes = cards.map do |card|
     GraphNode.new(
       get_card_url_prefix(card.url),
-      card.name.gsub('"', '\"'),
+      card.name,
       card.url,
       card.desc,
       card.labels.map{ |l| l.name },
@@ -98,16 +105,10 @@ def draw_graph(cards)
     end
   end
 
-  nodes_with_edges = graph_nodes.filter do |node|
-    graph_edges.any? do |edge|
-      edge.from == node.id || edge.to == node.id
-    end
-  end
-
   template = <<~'ERB'
   digraph g {
 
-    <% nodes_with_edges.each do |node| %>
+    <% graph_nodes.each do |node| %>
     "<%= node.id %>" [
       label = <
         <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
@@ -130,7 +131,8 @@ def draw_graph(cards)
   ERB
 
   graphviz_input = ERB.new(template).result(binding)
-  graphviz_output, status = Open3.capture2("dot", "-Tsvg", stdin_data: graphviz_input)
+  connected_components_output, status = Open3.capture2("ccomps", "-x", stdin_data: graphviz_input)
+  graphviz_output, status = Open3.capture2("dot", "-Tsvg", stdin_data: connected_components_output)
   graphviz_output
 end
 
