@@ -1,0 +1,11 @@
+---
+applications:
+- name: trello-zettelkasten
+  memory: 256M
+  buildpacks:
+  - ruby_buildpack
+  env:
+    SESSION_SECRET: ((session_secret))
+    TRELLO_KEY: ((trello_key))
+    TRELLO_TOKEN: ((trello_token))
+
