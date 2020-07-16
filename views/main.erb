@@ -7,8 +7,8 @@
     <ul>
       <% boards.each do |board| %>
         <li>
-          <input id="<%= board.id %>" name="<%= board.id %>" type=checkbox>
-          <label for="<%= board.id %>"><%= board.name %></label>
+          <input id="board[<%= board.id %>]" name="board[<%= board.id %>]" type=checkbox>
+          <label for="board[<%= board.id %>]"><%= board.name %></label>
         </li>
       <% end %>
     </ul>

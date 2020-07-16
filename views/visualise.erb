@@ -1,15 +1,35 @@
-<h1>Connected graphs for <%= board_names %></h1>
 <style>
-.graph-wrapper {
-  overflow: scroll;
-  max-width: 98%;
-  max-height: 80vh;
-  margin-bottom: 20px;
-  display: inline-block;
-  border: 3px solid #b1b4b6;
-  vertical-align: top;
-}
+  .graph-wrapper {
+    overflow: scroll;
+    max-width: 98%;
+    max-height: 80vh;
+    margin-bottom: 20px;
+    display: inline-block;
+    border: 3px solid #b1b4b6;
+    vertical-align: top;
+  }
+  .filter {
+    margin-bottom: 20px;
+  }
 </style>
+<h1>Connected graphs for <%= board_names %></h1>
+<details class="filter">
+  <summary>Filter by labels</summary>
+  <form action="/visualise">
+    <ul>
+      <% board_ids.each do |board_id| %>
+        <input type="hidden" name="board[<%= board_id %>]" value="on">
+      <% end %>
+      <% labels.sort_by{|label| label.name}.each do |label| %>
+        <li class="label-colour-<%= label.color %>">
+          <input id="label[<%= label.id %>]" name="label[<%= label.id %>]" type=checkbox>
+          <label for="label[<%= label.id %>]"><%= label.name %></label>
+        </li>
+      <% end %>
+    </ul>
+    <input type="submit">
+  </form>
+</details>
 <% graphs.each do |graph| %>
   <div class="graph-wrapper">
   <%= graph %>

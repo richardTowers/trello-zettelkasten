@@ -54,7 +54,8 @@ get "/visualise" do
     oauth_token: session.fetch(:token),
   )
 
-  board_ids = params.keys
+  board_ids = params.fetch("board", {}).keys
+  filter_label_ids = Set.new(params.fetch("label", {}).keys)
 
   boards = board_ids.map do |board_id|
     client.find(:boards, board_id)
@@ -64,9 +65,20 @@ get "/visualise" do
     board.cards
   end
 
+  labels = Set.new(cards.flat_map do |card|
+    card.labels
+  end)
+
+  filtered_cards = cards.select do |card|
+    filter_label_ids.empty? || (filter_label_ids & Set.new(card.labels.map {|l| l.id})).any?
+  end
+
   erb :visualise, locals: {
+    board_ids: board_ids,
     board_names: boards.map {|b| b.name}.join(","),
-    graphs: draw_graphs(cards)
+    graphs: draw_graphs(cards, filtered_cards),
+    labels: labels,
+    query: request.query_string,
   }
 end
 
@@ -88,8 +100,8 @@ def get_card_url_prefix(url)
   url.match(CARD_PATTERN)[0]
 end
 
-def draw_graphs(cards)
-  graph_nodes = cards.map do |card|
+def draw_graphs(cards, filtered_cards)
+  all_nodes = cards.map do |card|
     GraphNode.new(
       get_card_url_prefix(card.url),
       card.name,
@@ -99,16 +111,32 @@ def draw_graphs(cards)
     )
   end
 
-  graph_edges = graph_nodes.flat_map do |node|
+  filtered_nodes = filtered_cards.map do |card|
+    GraphNode.new(
+      get_card_url_prefix(card.url),
+      card.name,
+      card.url,
+      card.desc,
+      card.labels.map{ |l| l.name },
+    )
+  end
+
+  filtered_edges = filtered_nodes.flat_map do |node|
     node.desc.scan(CARD_PATTERN).map do |match|
       GraphEdge.new(node.id, match)
+    end
+  end
+
+  nodes_to_render = all_nodes.filter do |node|
+    filtered_edges.any? do |edge|
+      node.id == edge.from || node.id == edge.to
     end
   end
 
   template = <<~'ERB'
   digraph g {
 
-    <% graph_nodes.each do |node| %>
+    <% nodes_to_render.each do |node| %>
     "<%= node.id %>" [
       label = <
         <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
@@ -123,7 +151,7 @@ def draw_graphs(cards)
     ]
     <% end %>
 
-    <% graph_edges.each do |edge| %>
+    <% filtered_edges.each do |edge| %>
     "<%= edge.from %>" -> "<%= edge.to %>"
     <% end %>
 
