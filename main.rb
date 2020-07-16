@@ -25,19 +25,25 @@ end
 
 get "/" do
   if session.has_key?(:token)
-    client = Trello::Client.new(
-      consumer_key: ENV.fetch("TRELLO_KEY"),
-      consumer_secret: ENV.fetch("TRELLO_TOKEN"),
-      oauth_token: session.fetch(:token),
-    )
+    begin
+      client = Trello::Client.new(
+        consumer_key: ENV.fetch("TRELLO_KEY"),
+        consumer_secret: ENV.fetch("TRELLO_TOKEN"),
+        oauth_token: session.fetch(:token),
+      )
 
-    person = client.find(:members, "me")
+      person = client.find(:members, "me")
 
-    erb :main, locals: {
-      signed_in: true,
-      person: person,
-      boards: person.boards,
-    }
+      erb :main, locals: {
+        signed_in: true,
+        person: person,
+        boards: person.boards,
+      }
+    rescue
+      erb :main, locals: {
+        signed_in: false,
+      }
+    end
   else
     erb :main, locals: {
       signed_in: false,
