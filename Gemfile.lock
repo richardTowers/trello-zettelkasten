@@ -9,7 +9,7 @@ GEM
       minitest (~> 5.1)
       tzinfo (~> 1.1)
       zeitwerk (~> 2.2, >= 2.2.2)
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     concurrent-ruby (1.1.6)
     domain_name (0.5.20190701)
@@ -41,7 +41,7 @@ GEM
       oauth (~> 0.4)
       omniauth (~> 1.0)
       omniauth-oauth (~> 1.0)
-    public_suffix (4.0.5)
+    public_suffix (4.0.6)
     rack (2.2.3)
     rack-protection (2.0.8.1)
       rack
